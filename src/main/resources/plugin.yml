@@ -1,0 +1,11 @@
+name: ${project.name}
+version: ${project.version}
+main: org.shanerx.backup.AutoBackup
+
+author: ${author}
+description: ${project.description}
+
+commands:
+  backup:
+    description: ${project.description}
+    aliases: [autobackup, ab, autob, bckp]
