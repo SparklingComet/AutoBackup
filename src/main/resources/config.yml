@@ -11,10 +11,10 @@
 
 # +------------- Start of Config -------------+
 
-# Enable plugin version checking system. This will alert you when there is a new update.
+# Disable plugin version checking system. This will alert you when there is a new update.
 # Since new updates may introduce more features and bug patches, it is recommended that you
-# keep this enabled (true).
-updater: true
+# keep the updater enabled (disable-updater: false).
+disable-updater: false
 
 # Determines which kind of backup to perform on default, aka when the command /backup is run.
 default-modes: ['overworld', 'nether', 'end']
@@ -51,13 +51,13 @@ allow-force-console: true
 # Use this configuration section to determine what is backed up.
 # Every list entry is a different backup mode. Feel free to add your own modes and remove the examples
 # you don't need.
-# - The mode name (example: everything, plugin-jars, etc) can be chosen freely. Avoid using 'default' though.
+# - The mode name (example: everything, plugins, etc) can be chosen freely. Avoid using 'default' though.
 # - The dir option determines what folder is backed up. '/' means server root.
 # - The allow-manual option determines whether this backup can be performed by the /backup command
-# - The schedule option determines whether or not to perform the backup manually every x minutes.
-#   If set to 0 or negative, the scheduled backup is disabled.
+# - The schedule option determines whether or not to perform the backup automatically every x minutes.
+#   If set to 0 or a negative integer, the scheduled backup is disabled.
 #   If set to a positive integer, the value indicates the time in minutes between every automatic backup.
-# NOTE: These are just examples! You should add and tweak the ones you need and get rid of those you
+# NOTE: These are just (working) examples! You should add and tweak the ones you need and get rid of those you
 # do not need. In particular, the backup 'everything' is extremely inefficient and can take very long times. It
 # is therefore highly discouraged. You should rather setup separate smaller backups, ie. one for plugin data, one for
 # each world, etc.

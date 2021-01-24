@@ -45,7 +45,7 @@ public class AutoBackup extends JavaPlugin {
 
         getCommand("autobackup").setExecutor(new BackupCommand(this));
 
-        if (getConfig().getBoolean("updater")) {
+        if (!getConfig().getBoolean("disable-updater")) {
             new Updater(getDescription()).checkCurrentVersion();
         }
 
@@ -59,10 +59,14 @@ public class AutoBackup extends JavaPlugin {
     @Override
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
+
     }
 
     public void loadSettings() {
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
+        //reloadConfig();
+        //saveConfig();
 
         root = getConfig().getBoolean("relative-paths") ? new File(new File(getDataFolder().getAbsoluteFile().getParent()).getParent()) : null;
         backupsDir = new File(root, getConfig().getString("backup-dir"));
