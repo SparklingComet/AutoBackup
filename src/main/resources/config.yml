@@ -11,6 +11,11 @@
 
 # +------------- Start of Config -------------+
 
+# Enable plugin version checking system. This will alert you when there is a new update.
+# Since new updates may introduce more features and bug patches, it is recommended that you
+# keep this enabled (true).
+updater: true
+
 # Determines which kind of backup to perform on default, aka when the command /backup is run.
 default-modes: ['overworld', 'nether', 'end']
 

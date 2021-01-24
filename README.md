@@ -3,8 +3,8 @@
 _Schedule and perform automatic backups_
 
 ## Project Information
-This repository contains the source for the [AutoBackup](https://www.spigotmc.org/resources/autobackup.88209/) plugin
-on SipigotMC. Please visit that link for a compiled .jar file to download and install. More information about the
+This repository contains the source for the [AutoBackup plugin on SpigotMC](https://www.spigotmc.org/resources/autobackup.88209/).
+Please visit that link for a compiled .jar file to download and install. More information about the
 plugin usage can be found on its SpigotMC page as well.
 
 If you wish to make a contribution to the project, feel free to open a

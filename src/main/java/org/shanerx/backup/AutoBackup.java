@@ -45,6 +45,10 @@ public class AutoBackup extends JavaPlugin {
 
         getCommand("autobackup").setExecutor(new BackupCommand(this));
 
+        if (getConfig().getBoolean("updater")) {
+            new Updater(getDescription()).checkCurrentVersion();
+        }
+
         // METRICS
         int pluginId = 10087;
         Metrics metrics = new Metrics(this, pluginId);
