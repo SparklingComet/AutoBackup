@@ -29,7 +29,8 @@ public enum Message {
     BACKUP_PERFORMING("&7Taking the following backups:  &c"),
     BACKUP_SUCCESSFUL("&7Successfully taken the following backups:  &c"),
     INVALID_USAGE("&4Invalid usage. Try &7/autobackup help&4 for more information."),
-    HELP("&c/autobackup&7: View plugin information.\n" +
+    HELP("&7Running AutoBackup v" + AutoBackup.getInstance().getDescription().getVersion() +
+            "\n&c/autobackup&7: View plugin information.\n" +
             "&c/autobackup help&7: Display this message.\n" +
             "&c/autobackup list&7: Display all available backup modes.\n" +
             "&c/autobackup default&7: Take default backups.\n" +

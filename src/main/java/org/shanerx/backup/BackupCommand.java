@@ -38,9 +38,11 @@ public class BackupCommand implements CommandExecutor {
 
         if (args.length == 1) {
             if (args[0].equalsIgnoreCase("help")) {
-                sender.sendMessage(Message.INFO.toString());
                 if (sender.hasPermission("autobackup.help")) {
                     sender.sendMessage(Message.HELP.toString());
+                }
+                else {
+                    sender.sendMessage(Message.INFO.toString());
                 }
                 return true;
             }
