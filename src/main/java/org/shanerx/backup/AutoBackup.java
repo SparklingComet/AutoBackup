@@ -22,6 +22,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,7 +35,7 @@ public class AutoBackup extends JavaPlugin {
 
     private static AutoBackup plugin;
     private Set<BackupMode> backupModes, defaultModes;
-    private File root, backupsDir;
+    private File root, backupsDir, logFile;
 
     @Override
     public void onEnable() {
@@ -70,6 +72,9 @@ public class AutoBackup extends JavaPlugin {
 
         root = getConfig().getBoolean("relative-paths") ? new File(new File(getDataFolder().getAbsoluteFile().getParent()).getParent()) : null;
         backupsDir = new File(root, getConfig().getString("backup-dir"));
+        if (getConfig().getBoolean("backup-log.enable")) {
+            logFile = new File(backupsDir, "backup-log.txt");
+        }
 
         loadBackups();
         scheduleAll();
@@ -87,7 +92,7 @@ public class AutoBackup extends JavaPlugin {
                     public void run() {
                         if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
                                 .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
-                        performBackup(mode, true);
+                        performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
                     }
                 }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
             }
@@ -102,7 +107,7 @@ public class AutoBackup extends JavaPlugin {
         return defaultModes;
     }
 
-    public boolean performBackup(BackupMode mode, boolean async) {
+    public boolean performBackup(BackupMode mode, boolean async, String logEntity) {
         if (!backupsDir.isDirectory()) {
             if (!backupsDir.mkdirs()) {
                 getLogger().log(Level.SEVERE, Message.DIR_NOT_CREATED.toConsoleString());
@@ -128,7 +133,6 @@ public class AutoBackup extends JavaPlugin {
                         ZipUtil.pack(mode.getDir(), zipFile, s -> {
                             String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir.getAbsoluteFile().toPath()).toString();
                             if (s.startsWith(path)) {
-                            //    System.out.println(s);
                                 return null;
                             }
                             return s;
@@ -149,6 +153,26 @@ public class AutoBackup extends JavaPlugin {
 
         if (async) runnable.runTaskAsynchronously(this);
         else runnable.runTask(this);
+
+        if (success[0] && getConfig().getBoolean("backup-log.enable")) {
+            try {
+                if (!logFile.exists()) {
+                    logFile.createNewFile();
+                }
+
+                FileWriter writer = new FileWriter(plugin.getLogFile(), true);
+                if (logEntity != null)
+                    writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
+                else
+                    writer.append(zipName + "\n");
+
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         return success[0];
     }
 
@@ -176,5 +200,9 @@ public class AutoBackup extends JavaPlugin {
 
     public static AutoBackup getInstance() {
         return plugin;
+    }
+
+    public File getLogFile() {
+        return logFile;
     }
 }

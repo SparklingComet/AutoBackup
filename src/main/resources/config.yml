@@ -25,8 +25,16 @@ default-modes: ['overworld', 'nether', 'end']
 # Set to false at your own risk!
 exclude-backup: true
 
-# Determines where to save the backups. DO NOT CHANGE unless you are exporting the backups outside
-# the Minecraft server root.
+# Determines where to save the backups.
+# Warnings:
+# - DO NOT CHANGE unless you are exporting the backups outside!
+# - If you are storing backups inside the Minecraft server directory, DO NOT CHANGE this value once you have started
+#   taking backups, unless you erased those backups from where they used to be (as in exported them outside the
+#   Minecraft server root).
+# - Either way, DO NOT set this to the same path as the Minecraft server root! (Subdirectories, sibling and parent
+#   directories are fine).
+# If you do not wish to worry about these things, it is recommended you leave this setting to its default value
+# ('/backups').
 backup-dir: '/backups'
 
 # Determines whether the paths in this config are to be taken relative to the Minecraft server root
@@ -47,6 +55,12 @@ immediate-backup: false
 # Determines whether the console is allowed to perform a backup even if manual trigger for the backup
 # (allow-manual option) is disabled.
 allow-force-console: true
+
+# Should AutoBackup log all backups to the backup-log.txt file? Should AutoBackup log which entity (player or console)
+# issued the backup?
+backup-log:
+  enable: true
+  log-entity: false
 
 # Use this configuration section to determine what is backed up.
 # Every list entry is a different backup mode. Feel free to add your own modes and remove the examples

@@ -21,6 +21,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+
 public class BackupCommand implements CommandExecutor {
 
     private AutoBackup plugin;
@@ -103,8 +107,11 @@ public class BackupCommand implements CommandExecutor {
                 }
 
                 StringBuilder sb = new StringBuilder();
+                String name = sender.getName() +
+                        ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
+
                 for (BackupMode mode : plugin.getDefaultBackups()) {
-                    if (plugin.performBackup(mode, true)) {
+                    if (plugin.performBackup(mode, true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                         sb.append(mode.getName()).append("  ");
                         continue;
                     }
@@ -142,7 +149,9 @@ public class BackupCommand implements CommandExecutor {
                             return true;
                         }
 
-                        if (plugin.performBackup(mode, true)) {
+                        String name = sender.getName() +
+                                ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
+                        if (plugin.performBackup(mode, true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                             if (sender instanceof Player) sender.sendMessage(Message.BACKUP_PERFORMING.toString() + mode.getName());
                             if (plugin.getConfig().getBoolean("log-to-console")) {
                                 plugin.getServer().getConsoleSender().sendMessage(Message.BACKUP_PERFORMING.toConsoleString() + mode.getName());
