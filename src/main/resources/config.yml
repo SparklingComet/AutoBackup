@@ -57,10 +57,10 @@ immediate-backup: false
 allow-force-console: true
 
 # Should AutoBackup log all backups to the backup-log.txt file? Should AutoBackup log which entity (player or console)
-# issued the backup?
+# issued the backup? If log-entity is 'false', only the path will be logged.
 backup-log:
   enable: true
-  log-entity: false
+  log-entity: true
 
 # Use this configuration section to determine what is backed up.
 # Every list entry is a different backup mode. Feel free to add your own modes and remove the examples
