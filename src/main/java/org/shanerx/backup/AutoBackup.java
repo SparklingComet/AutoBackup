@@ -67,8 +67,6 @@ public class AutoBackup extends JavaPlugin {
     public void loadSettings() {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
-        //reloadConfig();
-        //saveConfig();
 
         root = getConfig().getBoolean("relative-paths") ? new File(new File(getDataFolder().getAbsoluteFile().getParent()).getParent()) : null;
         backupsDir = new File(root, getConfig().getString("backup-dir"));
@@ -131,21 +129,24 @@ public class AutoBackup extends JavaPlugin {
                     File zipFile = new File(backupsDir, zipName);
                     if (getConfig().getBoolean("exclude-backup")) {
                         ZipUtil.pack(mode.getDir(), zipFile, s -> {
-                            String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir.getAbsoluteFile().toPath()).toString();
+                            String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir
+                                    .getAbsoluteFile().toPath()).toString();
                             if (s.startsWith(path)) {
                                 return null;
                             }
                             return s;
-                        });
+                        }, mode.getCompressionLevel());
                     }
                     else {
-                        ZipUtil.pack(mode.getDir(), zipFile);
+                        ZipUtil.pack(mode.getDir(), zipFile, mode.getCompressionLevel());
                     }
 
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString() + mode.getName());
+                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
+                            + mode.getName());
                 } catch(Exception e){
                     e.printStackTrace();
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString() + mode.getName());
+                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
+                            + mode.getName());
                     success[0] = false;
                 }
             }
@@ -187,7 +188,9 @@ public class AutoBackup extends JavaPlugin {
                     (String) map.get("name"),
                     new File(root, (String) map.get("dir")),
                     (Boolean) map.get("allow-manual"),
-                    (Integer) map.get("schedule")));
+                    (Integer) map.get("schedule"),
+                    (Integer) map.get("compression")
+            ));
         }
 
         for (BackupMode mode : backupModes) {

@@ -17,18 +17,41 @@
 package org.shanerx.backup;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.zip.Deflater;
 
 public class BackupMode {
     private String name;
     private File dir;
     private boolean allowManual;
     private int schedule;
+    private int compressionLevel;
 
-    public BackupMode(String name, File dir, boolean allowManual, int schedule) {
+    public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel) {
         this.name = name;
         this.dir = dir;
         this.allowManual = allowManual;
         this.schedule = Math.max(schedule, 0); // if <= 0 set to 0, otherwise to predefined value
+
+        switch (compressionLevel) {
+            case -1:
+                this.compressionLevel = Deflater.NO_COMPRESSION;
+                break;
+            case 0:
+                this.compressionLevel = Deflater.DEFAULT_COMPRESSION;
+                break;
+            case 1:
+                this.compressionLevel = Deflater.BEST_SPEED;
+                break;
+            case 2:
+                this.compressionLevel = Deflater.BEST_COMPRESSION;
+                break;
+            default:
+                AutoBackup.getInstance().getLogger().log(Level.WARNING,
+                    String.format("(Backup mode: %s) Invalid compression value: %d", name, compressionLevel));
+                this.compressionLevel = Deflater.DEFAULT_COMPRESSION;
+                break;
+        }
     }
 
     public String getName() {
@@ -45,5 +68,9 @@ public class BackupMode {
 
     public boolean isAllowedManually() {
         return allowManual;
+    }
+
+    public int getCompressionLevel() {
+        return compressionLevel;
     }
 }
