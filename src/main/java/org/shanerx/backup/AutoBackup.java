@@ -127,10 +127,12 @@ public class AutoBackup extends JavaPlugin {
 
                 try {
                     File zipFile = new File(backupsDir, zipName);
+                    String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir
+                            .getAbsoluteFile().toPath()).toString();
+
                     if (getConfig().getBoolean("exclude-backup")) {
                         ZipUtil.pack(mode.getDir(), zipFile, s -> {
-                            String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir
-                                    .getAbsoluteFile().toPath()).toString();
+
                             if (s.startsWith(path)) {
                                 return null;
                             }
