@@ -11,6 +11,8 @@ If you wish to make a contribution to the project, feel free to open a
 [GitHub issue](https://github.com/SparklingComet/AutoBackup/issues) or a 
 [pull request](https://github.com/SparklingComet/AutoBackup/pulls).
 
+It is recommended you check out the [wiki](https://github.com/SparklingComet/AutoBackup/wiki) for documentation on the plugin's usage and configuration.
+
 ## License
 The project is licensed under the [Apache License v2.0](https://github.com/SparklingComet/AutoBackup/blob/master/LICENSE).
 
