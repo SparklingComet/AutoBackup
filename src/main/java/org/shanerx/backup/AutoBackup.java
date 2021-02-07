@@ -52,10 +52,7 @@ public class AutoBackup extends JavaPlugin {
         }
 
         // METRICS
-        int pluginId = 10087;
-        Metrics metrics = new Metrics(this, pluginId);
-        metrics.addCustomChart(new Metrics.SimplePie("num_modes", () -> String.valueOf(backupModes.size())));
-        metrics.addCustomChart(new Metrics.SimplePie("num_def_modes", () -> String.valueOf(defaultModes.size())));
+        registerMetrics();
     }
 
     @Override
@@ -120,6 +117,7 @@ public class AutoBackup extends JavaPlugin {
 
         final boolean[] success = {true};
         boolean log = getConfig().getBoolean("log-to-console");
+        final String[] failReason = new String[1];
 
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
@@ -150,6 +148,7 @@ public class AutoBackup extends JavaPlugin {
                     if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
                             + mode.getName());
                     success[0] = false;
+                    failReason[0] = e.getMessage();
                 }
             }
         };
@@ -157,20 +156,33 @@ public class AutoBackup extends JavaPlugin {
         if (async) runnable.runTaskAsynchronously(this);
         else runnable.runTask(this);
 
-        if (success[0] && getConfig().getBoolean("backup-log.enable")) {
+        if (getConfig().getBoolean("backup-log.enable")) {
             try {
                 if (!logFile.exists()) {
                     logFile.createNewFile();
                 }
 
-                FileWriter writer = new FileWriter(plugin.getLogFile(), true);
-                if (logEntity != null)
-                    writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
-                else
-                    writer.append(zipName + "\n");
+                if (success[0] && getConfig().getBoolean("backup-log.log-success")) {
+                    FileWriter writer = new FileWriter(plugin.getLogFile(), true);
+                    if (logEntity != null)
+                        writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
+                    else
+                        writer.append(zipName + "\n");
 
-                writer.flush();
-                writer.close();
+                    writer.flush();
+                    writer.close();
+                }
+                else if (getConfig().getBoolean("backup-log.log-failure")) {
+                    FileWriter writer = new FileWriter(plugin.getLogFile(), true);
+                    if (logEntity != null)
+                        writer.append(String.format("%s    (by %s)    FAIL: %s\n", zipName, logEntity, failReason[0]));
+                    else
+                        writer.append(zipName + "\n");
+
+                    writer.flush();
+                    writer.close();
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -201,6 +213,13 @@ public class AutoBackup extends JavaPlugin {
             }
         }
         return true;
+    }
+
+    public void registerMetrics() {
+        int pluginId = 10087;
+        Metrics metrics = new Metrics(this, pluginId);
+        metrics.addCustomChart(new Metrics.SimplePie("num_modes", () -> String.valueOf(backupModes.size())));
+        metrics.addCustomChart(new Metrics.SimplePie("num_def_modes", () -> String.valueOf(defaultModes.size())));
     }
 
     public static AutoBackup getInstance() {

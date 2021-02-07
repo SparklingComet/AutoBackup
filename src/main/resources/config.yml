@@ -8,39 +8,37 @@
 # - This config was first generated for plugin version ${project.version}
 # - If you need to regenerate the default config, delete or rename this file
 #   and restart the server.
+# - Please consider re-generating the config after updating the plugin because otherwise
+#   new config options will not show up.
+#
+#  DOCUMENTATION
+#  To avoid cluttering of the config, most comments were removed in version v1.1.1.
+#  The explanations and the default settings can be found on the wiki:
+#  https://github.com/SparklingComet/AutoBackup/wiki/Configuration
+#  Please consult the documentation when in doubt in order to avoid mistakes.
+
 
 # +------------- Start of Config -------------+
 
-# Disable plugin version checking system. This will alert you when there is a new update.
-# Since new updates may introduce more features and bug patches, it is recommended that you
-# keep the updater enabled (disable-updater: false).
+# Disable plugin version checking system.
 disable-updater: false
 
-# Determines which kind of backup to perform on default, aka when the command /backup is run.
+# Determines which kind of backup to perform on default, aka when the command '/backup default' is run.
 default-modes: ['overworld', 'nether', 'end']
 
 # Determines whether to exclude the backup directory from a potential backup.
-# It is HIGHLY RECOMMENDED that you leave this to the default setting (true)!
-# Disabling this setting will dramatically increase both occupied disk space and backup taking time.
-# Set to false at your own risk!
+# It is HIGHLY RECOMMENDED that you leave this to the default setting (true)! Check the wiki for more information (link
+# above)
 exclude-backup: true
-
-# Determines where to save the backups.
-# Warnings:
-# - DO NOT CHANGE unless you are exporting the backups outside!
-# - If you are storing backups inside the Minecraft server directory, DO NOT CHANGE this value once you have started
-#   taking backups, unless you erased those backups from where they used to be (as in exported them outside the
-#   Minecraft server root).
-# - Either way, DO NOT set this to the same path as the Minecraft server root! (Subdirectories, sibling and parent
-#   directories are fine).
-# If you do not wish to worry about these things, it is recommended you leave this setting to its default value
-# ('/backups').
-backup-dir: '/backups'
 
 # Determines whether the paths in this config are to be taken relative to the Minecraft server root
 # as opposed to actual system root. Leave the default option (true) unless you know what you
 # are doing and you would like to export the backups outside your Minecraft server directory.
 relative-paths: true
+
+# Determines where to save the backups.
+# WARNING: Only change if you know what you are doing! Check the wiki (link above) for more information.
+backup-dir: '/backups'
 
 # Determines whether or not to log to console when backups are performed successfully (recommended).
 # If a backup fails, the plugin will log it regardless of whether this option is set to true or false.
@@ -48,8 +46,6 @@ log-to-console: true
 
 # Determines whether or not to perform the first iteration of a scheduled backup cycle on server start
 # and on plugin reload, or wait the scheduled time interval before the first cycle.
-# Setting to true may cause the server startup time to increase, depending on the other plugins on the server
-# and the backup size.
 immediate-backup: false
 
 # Determines whether the console is allowed to perform a backup even if manual trigger for the backup
@@ -61,6 +57,8 @@ allow-force-console: true
 backup-log:
   enable: true
   log-entity: true
+  log-success: true
+  log-failure: true
 
 # Use this configuration section to determine what is backed up.
 # Every list entry is a different backup mode. Feel free to add your own modes and remove the examples
@@ -87,21 +85,25 @@ backup-modes:
     allow-manual: true
     schedule: 0
     compression: 0
+
   - name: 'plugins'
     dir: '/plugins'
     allow-manual: false
     schedule: 0
     compression: 0
+
   - name: 'overworld'
     dir: '/world'
     allow-manual: true
     schedule: 720
     compression: 0
+
   - name: 'nether'
     dir: '/world_nether'
     allow-manual: true
     schedule: 1440
     compression: 0
+
   - name: 'end'
     dir: '/world_the_end'
     allow-manual: true
