@@ -21,10 +21,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-
 public class BackupCommand implements CommandExecutor {
 
     private AutoBackup plugin;
