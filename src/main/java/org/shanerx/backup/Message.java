@@ -41,7 +41,9 @@ public enum Message {
     SCHEDULED_BACKUP_LOG("&7Entity &c%NAME% &7started scheduled backup mode &c%MODE%&7."),
     INVALID_MODE("&7The specified backup mode does not exist."),
     NO_DEFAULT("&4No default backup modes are configured at this time."),
-    DIR_NOT_CREATED("&4The backup directory could not be created! Solve this problem ASAP");
+    DIR_NOT_CREATED("&4The backup directory could not be created! Solve this problem ASAP"),
+    LOG_FAIL("Failed logging to file. Logging stacktrace below:"),
+    LOG_FILE_CREATION_FAIL("Failed creating log file. Logging stacktrace below:");
 
     String msg;
     Message(String msg) {

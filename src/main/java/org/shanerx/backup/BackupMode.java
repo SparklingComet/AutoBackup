@@ -17,6 +17,7 @@
 package org.shanerx.backup;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.logging.Level;
 import java.util.zip.Deflater;
 
@@ -26,12 +27,14 @@ public class BackupMode {
     private boolean allowManual;
     private int schedule;
     private int compressionLevel;
+    private boolean recursive;
 
-    public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel) {
+    public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel, boolean recursive) {
         this.name = name;
         this.dir = dir;
         this.allowManual = allowManual;
         this.schedule = Math.max(schedule, 0); // if <= 0 set to 0, otherwise to predefined value
+        this.recursive = recursive;
 
         switch (compressionLevel) {
             case -1:
@@ -72,5 +75,15 @@ public class BackupMode {
 
     public int getCompressionLevel() {
         return compressionLevel;
+    }
+
+    public boolean isRecursive() {
+        return recursive;
+    }
+
+    public String buildZipName(LocalDateTime now) {
+        return String.format("backup__%04d-%02d-%02d_%02d:%02d:%02d__%s.zip",
+                now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(),
+                this.getName());
     }
 }

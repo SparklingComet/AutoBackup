@@ -63,6 +63,7 @@ backup-log:
 # Use this configuration section to determine what is backed up.
 # Every list entry is a different backup mode. Feel free to add your own modes and remove the examples
 # you don't need.
+#
 # - The mode name (example: everything, plugins, etc) can be chosen freely. Avoid using 'default' though.
 # - The dir option determines what folder is backed up. '/' means server root.
 # - The allow-manual option determines whether this backup can be performed by the /backup command
@@ -72,6 +73,8 @@ backup-log:
 #   is occupied, but the backup itself takes longer.
 #   Possible settings: -1 (No compression); 0 (Default Compression); 1 (Best speed); 2 (Best Compression).
 #   More about this on the wiki (link at the top)
+# - The recursive option determines whether to backup only the files at the given path (false) or also the files inside
+#   the subdirectories of the given path (true)
 #
 # NOTE: These are just (working) examples! You should add and tweak the ones you need and get rid of those you
 # do not need. In particular, the backup 'everything' is extremely inefficient and can take very long times. It
@@ -83,30 +86,49 @@ backup-modes:
     allow-manual: true
     schedule: 0
     compression: 0
+    recursive: true
+
+  - name: 'server-data'
+    dir: '/'
+    allow-manual: true
+    schedule: 0
+    compression: 0
+    recursive: false
 
   - name: 'plugins'
     dir: '/plugins'
     allow-manual: false
     schedule: 0
     compression: 0
+    recursive: true
+
+  - name: 'plugin-jars'
+    dir: '/plugins'
+    allow-manual: false
+    schedule: 0
+    compression: 0
+    recursive: false
 
   - name: 'overworld'
     dir: '/world'
     allow-manual: true
     schedule: 720
     compression: 0
+    recursive: true
 
   - name: 'nether'
     dir: '/world_nether'
     allow-manual: true
     schedule: 1440
     compression: 0
+    recursive: true
 
   - name: 'end'
     dir: '/world_the_end'
     allow-manual: true
     schedule: 2880
     compression: 0
+    recursive: true
 
 # +-------------- End of Config --------------+
 # You are done configuring AutoBackup. Enjoy :)

@@ -71,14 +71,14 @@ public class AutoBackup extends JavaPlugin {
             logFile = new File(backupsDir, "backup-log.txt");
         }
 
-        loadBackups();
+        loadBackupModes();
         scheduleAll();
     }
 
     public void scheduleAll() {
         int period;
         boolean log = getConfig().getBoolean("log-to-console");
-        for (BackupMode mode : getBackups()) {
+        for (BackupMode mode : getBackupModes()) {
             if (mode.getSchedule() > 0) {
                 period = mode.getSchedule() * 60 * 20; // convert mins to ticks
 
@@ -94,7 +94,7 @@ public class AutoBackup extends JavaPlugin {
         }
     }
 
-    public Set<BackupMode> getBackups() {
+    public Set<BackupMode> getBackupModes() {
         return backupModes;
     }
 
@@ -110,13 +110,11 @@ public class AutoBackup extends JavaPlugin {
             }
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        String zipName = String.format("backup__%04d-%02d-%02d_%02d:%02d:%02d__%s.zip",
-                now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(),
-                mode.getName());
+        String zipName = mode.buildZipName(LocalDateTime.now());
 
         final boolean[] success = {true};
-        boolean log = getConfig().getBoolean("log-to-console");
+        boolean log = getConfig().getBoolean("log-to-console"),
+                rec = mode.isRecursive();
         final String[] failReason = new String[1];
 
         BukkitRunnable runnable = new BukkitRunnable() {
@@ -131,14 +129,21 @@ public class AutoBackup extends JavaPlugin {
                     if (getConfig().getBoolean("exclude-backup")) {
                         ZipUtil.pack(mode.getDir(), zipFile, s -> {
 
-                            if (s.startsWith(path)) {
+                            if (s.startsWith(path) || !rec && s.split("/").length > 1) {
                                 return null;
                             }
                             return s;
-                        }, mode.getCompressionLevel());
+                            }, mode.getCompressionLevel());
                     }
                     else {
-                        ZipUtil.pack(mode.getDir(), zipFile, mode.getCompressionLevel());
+                        ZipUtil.pack(mode.getDir(), zipFile, s -> {
+
+                            if (!rec && s.split("/").length > 1) {
+                                return null;
+                            }
+                            return s;
+
+                            },  mode.getCompressionLevel());
                     }
 
                     if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
@@ -156,42 +161,55 @@ public class AutoBackup extends JavaPlugin {
         if (async) runnable.runTaskAsynchronously(this);
         else runnable.runTask(this);
 
-        if (getConfig().getBoolean("backup-log.enable")) {
-            try {
-                if (!logFile.exists()) {
-                    logFile.createNewFile();
-                }
-
-                if (success[0] && getConfig().getBoolean("backup-log.log-success")) {
-                    FileWriter writer = new FileWriter(plugin.getLogFile(), true);
-                    if (logEntity != null)
-                        writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
-                    else
-                        writer.append(zipName + "\n");
-
-                    writer.flush();
-                    writer.close();
-                }
-                else if (getConfig().getBoolean("backup-log.log-failure")) {
-                    FileWriter writer = new FileWriter(plugin.getLogFile(), true);
-                    if (logEntity != null)
-                        writer.append(String.format("%s    (by %s)    FAIL: %s\n", zipName, logEntity, failReason[0]));
-                    else
-                        writer.append(zipName + "\n");
-
-                    writer.flush();
-                    writer.close();
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
         return success[0];
     }
 
-    public boolean loadBackups() {
+    public void logToFile(BackupAction action, String failReason, String logEntity, String zipName) {
+        if (!getConfig().getBoolean("backup-log.enable")) {
+            return;
+        }
+
+        try {
+            if (!logFile.exists()) {
+                if (!logFile.createNewFile()) {
+                    getLogger().log(Level.SEVERE, Message.LOG_FILE_CREATION_FAIL.toString());
+                }
+            }
+
+            FileWriter writer = new FileWriter(plugin.getLogFile(), true);
+
+            if (action == BackupAction.SUCCESS && getConfig().getBoolean("backup-log.log-success")) {
+                if (logEntity != null)
+                    writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
+                else
+                    writer.append(zipName + "\n");
+
+            }
+            else if (action == BackupAction.FAIL && getConfig().getBoolean("backup-log.log-failure")) {
+                if (logEntity != null)
+                    writer.append(String.format("%s    (by %s)    FAIL: %s\n", zipName, logEntity, failReason));
+                else
+                    writer.append(zipName + "    FAIL\n");
+
+            }
+            else if (action == BackupAction.DELETE_SUCCESS) {
+                writer.append(String.format("%s    (by %s)    DELETED\n", zipName, logEntity));
+            }
+            else if (action == BackupAction.DELETE_FAIL) {
+                writer.append(String.format("%s    (by %s)    DELETION FAILED: %s\n", zipName, logEntity, failReason));
+            }
+
+            writer.flush();
+            writer.close();
+
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, Message.LOG_FAIL.toString());
+            e.printStackTrace();
+        }
+    }
+
+    public void loadBackupModes() {
         backupModes.clear();
         defaultModes.clear();
 
@@ -203,7 +221,8 @@ public class AutoBackup extends JavaPlugin {
                     new File(root, (String) map.get("dir")),
                     (Boolean) map.get("allow-manual"),
                     (Integer) map.get("schedule"),
-                    (Integer) map.get("compression")
+                    (Integer) map.get("compression"),
+                    (Boolean) map.get("recursive")
             ));
         }
 
@@ -212,7 +231,34 @@ public class AutoBackup extends JavaPlugin {
                 defaultModes.add(mode);
             }
         }
-        return true;
+    }
+
+    public Set<Backup> getPastBackups() {
+        Set<Backup> backups = new HashSet<>();
+
+        for (File f : backupsDir.listFiles()) {
+            String path = backupsDir.toPath().relativize(f.toPath()).toString();
+
+            // assumption: #listFiles() never null since backupsDir is a valid dir
+            if (f.isDirectory() || path.equals(backupsDir.toPath().relativize(logFile.toPath()))) {
+                // not a backup zip
+                continue;
+            }
+
+            if (!path.endsWith(".zip") || !path.startsWith("backup__")) {
+                continue;
+            }
+
+            String modeName = path.split("__")[2].split("\\.")[0];
+            for (BackupMode mode : getBackupModes()) {
+                if (mode.getName().equalsIgnoreCase(modeName)) {
+                    backups.add(new Backup(mode, f.lastModified()));
+                    break;
+                }
+            }
+        }
+
+        return backups;
     }
 
     public void registerMetrics() {
@@ -228,5 +274,13 @@ public class AutoBackup extends JavaPlugin {
 
     public File getLogFile() {
         return logFile;
+    }
+
+    public File getRoot() {
+        return root;
+    }
+
+    public File getBackupsDir() {
+        return backupsDir;
     }
 }

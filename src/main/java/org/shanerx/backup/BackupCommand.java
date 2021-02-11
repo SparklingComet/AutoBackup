@@ -66,13 +66,13 @@ public class BackupCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (plugin.getBackups().size() == 0) {
+                if (plugin.getBackupModes().size() == 0) {
                     sender.sendMessage(Message.NO_BACKUPS.toString());
                     return true;
                 }
 
                 StringBuilder sb = new StringBuilder();
-                for (BackupMode mode : plugin.getBackups()) {
+                for (BackupMode mode : plugin.getBackupModes()) {
                     if (sender.hasPermission("autobackup.backup." + mode.getName().toLowerCase()) && mode.isAllowedManually() ||
                             sender == plugin.getServer().getConsoleSender() && plugin.getConfig().getBoolean("allow-force-console")) {
                         sb.append(mode.getName()).append("  ");
@@ -130,7 +130,7 @@ public class BackupCommand implements CommandExecutor {
                     return true;
                 }
 
-                for (BackupMode mode : plugin.getBackups()) {
+                for (BackupMode mode : plugin.getBackupModes()) {
                     if (mode.getName().equalsIgnoreCase(args[1])) {
                         if (plugin.getConfig().getBoolean("log-to-console")) {
                             plugin.getServer().getConsoleSender().sendMessage(Message.MANUAL_BACKUP_LOG.toConsoleString()
