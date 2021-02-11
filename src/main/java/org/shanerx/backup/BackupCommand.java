@@ -122,6 +122,25 @@ public class BackupCommand implements CommandExecutor {
                 }
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("purge")) {
+                if (!sender.hasPermission("autobackup.default")) {
+                    sender.sendMessage(Message.NO_PERMISSION.toString());
+                    return true;
+                }
+                else if ((sender instanceof Player) && !plugin.getConfig().getBoolean("allow-player-purge")) {
+                    sender.sendMessage(Message.NO_PERMISSION.toString());
+                    return true;
+                }
+                else if (!(sender instanceof Player) && !plugin.getConfig().getBoolean("allow-console-purge")) {
+                    sender.sendMessage(Message.NO_PERMISSION.toString());
+                    return true;
+                }
+
+                sender.sendMessage(Message.PURGE_PERFORMING.toString());
+                plugin.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
+
+                return true;
+            }
         }
         else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("take")) {

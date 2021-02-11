@@ -43,7 +43,9 @@ public enum Message {
     NO_DEFAULT("&4No default backup modes are configured at this time."),
     DIR_NOT_CREATED("&4The backup directory could not be created! Solve this problem ASAP"),
     LOG_FAIL("Failed logging to file. Logging stacktrace below:"),
-    LOG_FILE_CREATION_FAIL("Failed creating log file. Logging stacktrace below:");
+    LOG_FILE_CREATION_FAIL("Failed creating log file. Logging stacktrace below:"),
+    PURGE_PERFORMING("&7Purging all backups"),
+    PURGE_SUCCESSFUL("&7Successfully purged all backups (&c%NUMBER%&7)"),;
 
     String msg;
     Message(String msg) {

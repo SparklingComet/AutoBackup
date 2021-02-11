@@ -165,6 +165,32 @@ public class AutoBackup extends JavaPlugin {
         return success[0];
     }
 
+    public boolean purgeBackups(String logEntity) {
+        final boolean[] success = new boolean[1];
+        final int[] counter = {0};
+        boolean log = getConfig().getBoolean("log-to-console");
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Backup b : getPastBackups()) {
+                    if (!b.deleteDisk(logEntity)) {
+                        success[0] = false;
+                    }
+                    else {
+                        ++counter[0];
+                    }
+                }
+
+                if (log)
+                    getServer().getConsoleSender().sendMessage(Message.PURGE_SUCCESSFUL.toConsoleString()
+                            .replace("%NUMBER%", String.valueOf(counter[0])));
+            }
+        }.runTaskAsynchronously(this);
+
+        return success[0];
+    }
+
     public void logToFile(BackupAction action, String failReason, String logEntity, String zipName) {
         if (!getConfig().getBoolean("backup-log.enable")) {
             return;
