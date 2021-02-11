@@ -34,7 +34,8 @@ public enum Message {
             "&c/autobackup help&7: Display this message.\n" +
             "&c/autobackup list&7: Display all available backup modes.\n" +
             "&c/autobackup default&7: Take default backups.\n" +
-            "&c/autobackup take <mode>&7: Take chosen backup mode."),
+            "&c/autobackup take <mode>&7: Take chosen backup mode.\n" +
+            "&c/autobackup purge&7: Purge all past backups."),
     RELOAD("&7Plugin configuration reloaded successfully."),
    // INVALID_CONFIG("&4Invalid configuration, check the server log for more details. No backups could be loaded."),
     MANUAL_BACKUP_LOG("&7Entity &c%NAME% &7manually started backup mode &c%MODE%&7."),
@@ -45,7 +46,8 @@ public enum Message {
     LOG_FAIL("Failed logging to file. Logging stacktrace below:"),
     LOG_FILE_CREATION_FAIL("Failed creating log file. Logging stacktrace below:"),
     PURGE_PERFORMING("&7Purging all backups"),
-    PURGE_SUCCESSFUL("&7Successfully purged all backups (&c%NUMBER%&7)"),;
+    PURGE_SUCCESSFUL("&7Successfully purged all backups (&c%NUMBER%&7)"),
+    PURGE_LOG("&7Entity &c%NAME% &7manually started purge of all backups.");
 
     String msg;
     Message(String msg) {

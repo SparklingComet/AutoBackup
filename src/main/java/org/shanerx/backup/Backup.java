@@ -3,25 +3,18 @@ package org.shanerx.backup;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.TimeZone;
 
 public class Backup {
 
      private BackupMode mode;
      private LocalDateTime date;
-     private long time;
      private File zip;
 
      AutoBackup plugin;
 
-     public Backup(BackupMode mode, long time) {
+     public Backup(BackupMode mode, LocalDateTime date) {
          this.mode = mode;
-         this.time = time;
-         this.date = LocalDateTime.ofEpochSecond(
-                 time / 1000,
-                 (int) time % 1000 * 1000000,
-                 ZoneOffset.systemDefault().getRules().getOffset(LocalDateTime.now())
-         );
+         this.date = date;
 
          plugin = AutoBackup.getInstance();
          this.zip = new File(plugin.getBackupsDir(), mode.buildZipName(date));
@@ -35,11 +28,9 @@ public class Backup {
         return date;
     }
 
-    public long getTime() {
-        return time;
-    }
-
     public boolean deleteDisk(String logEntity) {
+        System.out.println("DEBUG: " + mode.buildZipName(date));
+
         boolean deleted = zip.delete();
         if (deleted) {
             plugin.logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, mode.buildZipName(date));

@@ -173,18 +173,35 @@ public class AutoBackup extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Backup b : getPastBackups()) {
-                    if (!b.deleteDisk(logEntity)) {
+                String path;
+                int counter = 0;
+
+                for (File f : backupsDir.listFiles()) {
+                    path = backupsDir.toPath().relativize(f.toPath()).toString();
+
+                    // assumption: #listFiles() never null since backupsDir is a valid dir
+                    if (f.isDirectory() || path.equals(backupsDir.toPath().relativize(logFile.toPath()))) {
+                        // not a backup zip
+                        continue;
+                    }
+
+                    if (!path.endsWith(".zip") || !path.startsWith("backup__")) {
+                        continue;
+                    }
+
+                    if(!f.delete()) {
                         success[0] = false;
+                        logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, path);
                     }
                     else {
-                        ++counter[0];
+                        ++counter;
+                        logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, path);
                     }
                 }
 
                 if (log)
                     getServer().getConsoleSender().sendMessage(Message.PURGE_SUCCESSFUL.toConsoleString()
-                            .replace("%NUMBER%", String.valueOf(counter[0])));
+                            .replace("%NUMBER%", String.valueOf(counter)));
             }
         }.runTaskAsynchronously(this);
 
@@ -278,7 +295,7 @@ public class AutoBackup extends JavaPlugin {
             String modeName = path.split("__")[2].split("\\.")[0];
             for (BackupMode mode : getBackupModes()) {
                 if (mode.getName().equalsIgnoreCase(modeName)) {
-                    backups.add(new Backup(mode, f.lastModified()));
+                    backups.add(new Backup(mode, null)); // TODO FIX
                     break;
                 }
             }

@@ -123,11 +123,11 @@ public class BackupCommand implements CommandExecutor {
                 return true;
             }
             else if (args[0].equalsIgnoreCase("purge")) {
-                if (!sender.hasPermission("autobackup.default")) {
+                if (!sender.hasPermission("autobackup.purge")) {
                     sender.sendMessage(Message.NO_PERMISSION.toString());
                     return true;
                 }
-                else if ((sender instanceof Player) && !plugin.getConfig().getBoolean("allow-player-purge")) {
+                else if ((sender instanceof Player) && !plugin.getConfig().getBoolean("allow-players-purge")) {
                     sender.sendMessage(Message.NO_PERMISSION.toString());
                     return true;
                 }
@@ -137,8 +137,10 @@ public class BackupCommand implements CommandExecutor {
                 }
 
                 sender.sendMessage(Message.PURGE_PERFORMING.toString());
+                if (plugin.getConfig().getBoolean("log-to-console")) {
+                    plugin.getServer().getConsoleSender().sendMessage(Message.PURGE_LOG.toConsoleString().replace("%NAME%", sender.getName()));
+                }
                 plugin.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
-
                 return true;
             }
         }
