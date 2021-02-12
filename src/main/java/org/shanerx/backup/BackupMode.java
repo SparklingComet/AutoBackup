@@ -82,7 +82,7 @@ public class BackupMode {
     }
 
     public String buildZipName(LocalDateTime now) {
-        return String.format("backup__%04d-%02d-%02d_%02d:%02d:%02d__%s.zip",
+        return String.format("backup__%04d-%02d-%02d_%02d-%02d-%02d__%s.zip",
                 now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(),
                 this.getName());
     }
