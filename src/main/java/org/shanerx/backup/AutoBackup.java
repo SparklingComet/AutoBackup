@@ -19,6 +19,7 @@ package org.shanerx.backup;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class AutoBackup extends JavaPlugin {
     private static AutoBackup plugin;
     private Set<BackupMode> backupModes, defaultModes;
     private File root, backupsDir, logFile;
+    private Set<BukkitTask> tasks;
 
     @Override
     public void onEnable() {
@@ -58,7 +60,6 @@ public class AutoBackup extends JavaPlugin {
     @Override
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
-
     }
 
     public void loadSettings() {
@@ -76,13 +77,21 @@ public class AutoBackup extends JavaPlugin {
     }
 
     public void scheduleAll() {
+        if (tasks == null) {
+            tasks = new HashSet<>();
+        }
+        else {
+            tasks.forEach(BukkitTask::cancel);
+            tasks.clear();
+        }
+
         int period;
         boolean log = getConfig().getBoolean("log-to-console");
         for (BackupMode mode : getBackupModes()) {
             if (mode.getSchedule() > 0) {
                 period = mode.getSchedule() * 60 * 20; // convert mins to ticks
 
-                new BukkitRunnable() {
+                BukkitTask task = new BukkitRunnable() {
                     @Override
                     public void run() {
                         if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
@@ -90,6 +99,7 @@ public class AutoBackup extends JavaPlugin {
                         performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
                     }
                 }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
+                tasks.add(task);
             }
         }
     }
