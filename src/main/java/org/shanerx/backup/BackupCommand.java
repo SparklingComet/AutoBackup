@@ -107,7 +107,7 @@ public class BackupCommand implements CommandExecutor {
                         ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
 
                 for (BackupMode mode : plugin.getDefaultBackups()) {
-                    if (plugin.performBackup(mode, true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
+                    if (mode.performBackup(true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                         sb.append(mode.getName()).append("  ");
                         continue;
                     }
@@ -168,7 +168,7 @@ public class BackupCommand implements CommandExecutor {
 
                         String name = sender.getName() +
                                 ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
-                        if (plugin.performBackup(mode, true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
+                        if (mode.performBackup(true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                             if (sender instanceof Player) sender.sendMessage(Message.BACKUP_PERFORMING.toString() + mode.getName());
                             if (plugin.getConfig().getBoolean("log-to-console")) {
                                 plugin.getServer().getConsoleSender().sendMessage(Message.BACKUP_PERFORMING.toConsoleString() + mode.getName());

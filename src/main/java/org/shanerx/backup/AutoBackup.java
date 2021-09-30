@@ -21,12 +21,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -105,7 +103,7 @@ public class AutoBackup extends JavaPlugin {
 
                     if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
                             .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
-                    performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
+                    mode.performBackup(true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
                 }
             }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
             tasks.add(task);
@@ -118,69 +116,6 @@ public class AutoBackup extends JavaPlugin {
 
     public Set<BackupMode> getDefaultBackups() {
         return defaultModes;
-    }
-
-    public boolean performBackup(BackupMode mode, boolean async, String logEntity) {
-        if (!backupsDir.isDirectory()) {
-            if (!backupsDir.mkdirs()) {
-                getLogger().log(Level.SEVERE, Message.DIR_NOT_CREATED.toConsoleString());
-                return false;
-            }
-        }
-
-        String zipName = mode.buildZipName(LocalDateTime.now());
-
-        final boolean[] success = {true};
-        boolean log = getConfig().getBoolean("log-to-console"),
-                rec = mode.isRecursive();
-        final String[] failReason = new String[1];
-
-        BukkitRunnable runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-
-                try {
-                    File zipFile = new File(backupsDir, zipName);
-                    String path = mode.getDir().getAbsoluteFile().toPath().relativize(backupsDir
-                            .getAbsoluteFile().toPath()).toString();
-
-                    if (getConfig().getBoolean("exclude-backup")) {
-                        ZipUtil.pack(mode.getDir(), zipFile, s -> {
-
-                            if (s.startsWith(path) || !rec && s.split("/").length > 1) {
-                                return null;
-                            }
-                            return s;
-                            }, mode.getCompressionLevel());
-                    }
-                    else {
-                        ZipUtil.pack(mode.getDir(), zipFile, s -> {
-
-                            if (!rec && s.split("/").length > 1) {
-                                return null;
-                            }
-                            return s;
-
-                            },  mode.getCompressionLevel());
-                    }
-
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
-                            + mode.getName());
-                } catch(Exception e){
-                    e.printStackTrace();
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
-                            + mode.getName());
-                    success[0] = false;
-                    failReason[0] = e.getMessage();
-                }
-            }
-        };
-
-        if (async) runnable.runTaskAsynchronously(this);
-        else runnable.runTask(this);
-
-        logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
-        return success[0];
     }
 
     public boolean purgeBackups(String logEntity) {

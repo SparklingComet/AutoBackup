@@ -16,6 +16,9 @@
 
 package org.shanerx.backup;
 
+import org.bukkit.scheduler.BukkitRunnable;
+import org.zeroturnaround.zip.ZipUtil;
+
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.logging.Level;
@@ -28,6 +31,8 @@ public class BackupMode {
     private int schedule;
     private int compressionLevel;
     private boolean recursive;
+
+    private final AutoBackup plugin = AutoBackup.getInstance();
 
     public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel, boolean recursive) {
         this.name = name;
@@ -85,5 +90,68 @@ public class BackupMode {
         return String.format("backup__%04d-%02d-%02d_%02d-%02d-%02d__%s.zip",
                 now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(),
                 this.getName());
+    }
+
+    public boolean performBackup(boolean async, String logEntity) {
+        if (!plugin.getBackupsDir().isDirectory()) {
+            if (!plugin.getBackupsDir().mkdirs()) {
+                plugin.getLogger().log(Level.SEVERE, Message.DIR_NOT_CREATED.toConsoleString());
+                return false;
+            }
+        }
+
+        String zipName = buildZipName(LocalDateTime.now());
+
+        final boolean[] success = {true};
+        boolean log = plugin.getConfig().getBoolean("log-to-console"),
+                rec = isRecursive();
+        final String[] failReason = new String[1];
+
+        BukkitRunnable runnable = new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                try {
+                    File zipFile = new File(plugin.getBackupsDir(), zipName);
+                    String path = getDir().getAbsoluteFile().toPath().relativize(plugin.getBackupsDir()
+                            .getAbsoluteFile().toPath()).toString();
+
+                    if (plugin.getConfig().getBoolean("exclude-backup")) {
+                        ZipUtil.pack(getDir(), zipFile, s -> {
+
+                            if (s.startsWith(path) || !rec && s.split("/").length > 1) {
+                                return null;
+                            }
+                            return s;
+                        }, getCompressionLevel());
+                    }
+                    else {
+                        ZipUtil.pack(getDir(), zipFile, s -> {
+
+                            if (!rec && s.split("/").length > 1) {
+                                return null;
+                            }
+                            return s;
+
+                        },  getCompressionLevel());
+                    }
+
+                    if (log) plugin.getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
+                            + getName());
+                } catch(Exception e){
+                    e.printStackTrace();
+                    if (log) plugin.getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
+                            + getName());
+                    success[0] = false;
+                    failReason[0] = e.getMessage();
+                }
+            }
+        };
+
+        if (async) runnable.runTaskAsynchronously(plugin);
+        else runnable.runTask(plugin);
+
+        plugin.logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
+        return success[0];
     }
 }
