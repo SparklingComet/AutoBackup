@@ -17,6 +17,7 @@
 package org.shanerx.backup;
 
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -87,20 +88,27 @@ public class AutoBackup extends JavaPlugin {
 
         int period;
         boolean log = getConfig().getBoolean("log-to-console");
-        for (BackupMode mode : getBackupModes()) {
-            if (mode.getSchedule() > 0) {
-                period = mode.getSchedule() * 60 * 20; // convert mins to ticks
 
-                BukkitTask task = new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
-                                .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
-                        performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
-                    }
-                }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
-                tasks.add(task);
+        for (BackupMode mode : getBackupModes()) {
+            if (mode.getSchedule() <= 0) {
+                return;
             }
+
+            period = mode.getSchedule() * 60 * 20; // convert mins to ticks
+            BukkitTask task = new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    if (getConfig().getInt("min-players") > Bukkit.getOnlinePlayers().size()) {
+                        return;
+                    }
+
+                    if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
+                            .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
+                    performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
+                }
+            }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
+            tasks.add(task);
         }
     }
 

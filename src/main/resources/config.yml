@@ -53,6 +53,11 @@ immediate-backup: false
 # (allow-manual option) is disabled.
 allow-force-console: true
 
+# Sets the min amount of players that need to be on for the backup to be performed.
+# If the number is set to '0' (default) or negative, backups will always be performed.
+# Manual backups by admins via '/ab default' or '/ab take <mode>' will always be performed.
+min-players: 0
+
 # Should AutoBackup log all backups to the backup-log.txt file? Should AutoBackup log which entity (player or console)
 # issued the backup? If log-entity is 'false', only the path will be logged.
 backup-log:
