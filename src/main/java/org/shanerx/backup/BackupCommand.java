@@ -107,7 +107,7 @@ public class BackupCommand implements CommandExecutor {
                         ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
 
                 for (BackupMode mode : plugin.getDefaultBackups()) {
-                    if (mode.performBackup(true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
+                    if (mode.performBackup(plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                         sb.append(mode.getName()).append("  ");
                         continue;
                     }
@@ -140,7 +140,8 @@ public class BackupCommand implements CommandExecutor {
                 if (plugin.getConfig().getBoolean("log-to-console")) {
                     plugin.getServer().getConsoleSender().sendMessage(Message.PURGE_LOG.toConsoleString().replace("%NAME%", sender.getName()));
                 }
-                plugin.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
+
+                Backup.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
                 return true;
             }
         }
@@ -168,7 +169,7 @@ public class BackupCommand implements CommandExecutor {
 
                         String name = sender.getName() +
                                 ((sender instanceof Player) ? " : " + ((Player) sender).getUniqueId().toString() : "");
-                        if (mode.performBackup(true, plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
+                        if (mode.performBackup(plugin.getConfig().getBoolean("backup-log.log-entity") ? name : null)) {
                             if (sender instanceof Player) sender.sendMessage(Message.BACKUP_PERFORMING.toString() + mode.getName());
                             if (plugin.getConfig().getBoolean("log-to-console")) {
                                 plugin.getServer().getConsoleSender().sendMessage(Message.BACKUP_PERFORMING.toConsoleString() + mode.getName());

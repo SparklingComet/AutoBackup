@@ -92,7 +92,7 @@ public class BackupMode {
                 this.getName());
     }
 
-    public boolean performBackup(boolean async, String logEntity) {
+    public boolean performBackup(String logEntity) {
         if (!plugin.getBackupsDir().isDirectory()) {
             if (!plugin.getBackupsDir().mkdirs()) {
                 plugin.getLogger().log(Level.SEVERE, Message.DIR_NOT_CREATED.toConsoleString());
@@ -145,13 +145,12 @@ public class BackupMode {
                     success[0] = false;
                     failReason[0] = e.getMessage();
                 }
+
+                plugin.logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
             }
         };
 
-        if (async) runnable.runTaskAsynchronously(plugin);
-        else runnable.runTask(plugin);
-
-        plugin.logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
+        runnable.runTaskAsynchronously(plugin);
         return success[0];
     }
 }

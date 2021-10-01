@@ -103,7 +103,7 @@ public class AutoBackup extends JavaPlugin {
 
                     if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
                             .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
-                    mode.performBackup(true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
+                    mode.performBackup(getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
                 }
             }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
             tasks.add(task);
@@ -116,49 +116,6 @@ public class AutoBackup extends JavaPlugin {
 
     public Set<BackupMode> getDefaultBackups() {
         return defaultModes;
-    }
-
-    public boolean purgeBackups(String logEntity) {
-        final boolean[] success = new boolean[1];
-        final int[] counter = {0};
-        boolean log = getConfig().getBoolean("log-to-console");
-
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                String path;
-                int counter = 0;
-
-                for (File f : backupsDir.listFiles()) {
-                    path = backupsDir.toPath().relativize(f.toPath()).toString();
-
-                    // assumption: #listFiles() never null since backupsDir is a valid dir
-                    if (f.isDirectory() || path.equals(backupsDir.toPath().relativize(logFile.toPath()))) {
-                        // not a backup zip
-                        continue;
-                    }
-
-                    if (!path.endsWith(".zip") || !path.startsWith("backup__")) {
-                        continue;
-                    }
-
-                    if(!f.delete()) {
-                        success[0] = false;
-                        logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, path);
-                    }
-                    else {
-                        ++counter;
-                        logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, path);
-                    }
-                }
-
-                if (log)
-                    getServer().getConsoleSender().sendMessage(Message.PURGE_SUCCESSFUL.toConsoleString()
-                            .replace("%NUMBER%", String.valueOf(counter)));
-            }
-        }.runTaskAsynchronously(this);
-
-        return success[0];
     }
 
     public void logToFile(BackupAction action, String failReason, String logEntity, String zipName) {

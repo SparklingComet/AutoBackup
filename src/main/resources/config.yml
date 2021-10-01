@@ -60,9 +60,12 @@ min-players: 0
 
 # Should AutoBackup log all backups to the backup-log.txt file? Should AutoBackup log which entity (player or console)
 # issued the backup? If log-entity is 'false', only the path will be logged.
+# 'enable' is a general switch and the only way to disable logs entirely. Doing so will suppress backup deletion logs
+# that would otherwise alwys be logged.
 backup-log:
   enable: true
   log-entity: true
+  log-start: false
   log-success: true
   log-failure: true
 

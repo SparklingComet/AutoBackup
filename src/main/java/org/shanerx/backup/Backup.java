@@ -1,5 +1,7 @@
 package org.shanerx.backup;
 
+import org.bukkit.scheduler.BukkitRunnable;
+
 import java.io.File;
 import java.time.LocalDateTime;
 
@@ -37,6 +39,52 @@ public class Backup {
         }
         plugin.logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, mode.buildZipName(date));
         return false;
+    }
+
+    public static boolean purgeBackups(String logEntity) {
+        File backupsDir = AutoBackup.getInstance().getBackupsDir();
+        File logFile = AutoBackup.getInstance().getLogFile();
+
+        final boolean[] success = new boolean[1];
+        final int[] counter = {0};
+        boolean log = AutoBackup.getInstance().getConfig().getBoolean("log-to-console");
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String path;
+                int counter = 0;
+
+                for (File f : backupsDir.listFiles()) {
+                    path = backupsDir.toPath().relativize(f.toPath()).toString();
+
+                    // assumption: #listFiles() never null since backupsDir is a valid dir
+                    if (f.isDirectory() || path.equals(backupsDir.toPath().relativize(logFile.toPath()))) {
+                        // not a backup zip
+                        continue;
+                    }
+
+                    if (!path.endsWith(".zip") || !path.startsWith("backup__")) {
+                        continue;
+                    }
+
+                    if(!f.delete()) {
+                        success[0] = false;
+                        AutoBackup.getInstance().logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, path);
+                    }
+                    else {
+                        ++counter;
+                        AutoBackup.getInstance().logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, path);
+                    }
+                }
+
+                if (log)
+                    AutoBackup.getInstance().getServer().getConsoleSender().sendMessage(Message.PURGE_SUCCESSFUL.toConsoleString()
+                            .replace("%NUMBER%", String.valueOf(counter)));
+            }
+        }.runTaskAsynchronously(AutoBackup.getInstance());
+
+        return success[0];
     }
 
 }
