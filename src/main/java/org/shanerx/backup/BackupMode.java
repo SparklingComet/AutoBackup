@@ -146,7 +146,8 @@ public class BackupMode {
                     failReason[0] = e.getMessage();
                 }
 
-                plugin.logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
+                BackupAction actionTaken = success[0] ? BackupAction.SUCCESS : BackupAction.FAIL;
+                actionTaken.logToFile(failReason[0], logEntity, zipName);
             }
         };
 

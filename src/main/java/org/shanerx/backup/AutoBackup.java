@@ -118,49 +118,6 @@ public class AutoBackup extends JavaPlugin {
         return defaultModes;
     }
 
-    public void logToFile(BackupAction action, String failReason, String logEntity, String zipName) {
-        if (!getConfig().getBoolean("backup-log.enable")) {
-            return;
-        }
-
-        try {
-            if (!logFile.exists()) {
-                if (!logFile.createNewFile()) {
-                    getLogger().log(Level.SEVERE, Message.LOG_FILE_CREATION_FAIL.toString());
-                }
-            }
-
-            FileWriter writer = new FileWriter(plugin.getLogFile(), true);
-
-            if (action == BackupAction.SUCCESS && getConfig().getBoolean("backup-log.log-success")) {
-                if (logEntity != null)
-                    writer.append(String.format("%s    (by %s)\n", zipName, logEntity));
-                else
-                    writer.append(zipName + "\n");
-
-            }
-            else if (action == BackupAction.FAIL && getConfig().getBoolean("backup-log.log-failure")) {
-                if (logEntity != null)
-                    writer.append(String.format("%s    (by %s)    FAIL: %s\n", zipName, logEntity, failReason));
-                else
-                    writer.append(zipName + "    FAIL\n");
-
-            }
-            else if (action == BackupAction.DELETE_SUCCESS) {
-                writer.append(String.format("%s    (by %s)    DELETED\n", zipName, logEntity));
-            }
-            else if (action == BackupAction.DELETE_FAIL) {
-                writer.append(String.format("%s    (by %s)    DELETION FAILED: %s\n", zipName, logEntity, failReason));
-            }
-
-            writer.flush();
-            writer.close();
-
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, Message.LOG_FAIL.toString());
-            e.printStackTrace();
-        }
-    }
 
     public void loadBackupModes() {
         backupModes.clear();

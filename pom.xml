@@ -17,8 +17,8 @@
 
     <build>
         <defaultGoal>install</defaultGoal>
-        <finalName>${project.artifactId}-v${project.version}-${maven.build.timestamp}</finalName>
-
+        <!--        <finalName>${project.artifactId}-v${project.version}-${maven.build.timestamp}</finalName> -->
+        <finalName>${project.artifactId}-v${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

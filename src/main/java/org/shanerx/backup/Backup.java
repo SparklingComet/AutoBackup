@@ -34,10 +34,10 @@ public class Backup {
 
         boolean deleted = zip.delete();
         if (deleted) {
-            plugin.logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, mode.buildZipName(date));
+            BackupAction.DELETE_SUCCESS.logToFile(null, logEntity, mode.buildZipName(date));
             return true;
         }
-        plugin.logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, mode.buildZipName(date));
+        BackupAction.DELETE_FAIL.logToFile("unknown", logEntity, mode.buildZipName(date));
         return false;
     }
 
@@ -70,11 +70,11 @@ public class Backup {
 
                     if(!f.delete()) {
                         success[0] = false;
-                        AutoBackup.getInstance().logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, path);
+                        BackupAction.DELETE_FAIL.logToFile("unknown", logEntity, path);
                     }
                     else {
                         ++counter;
-                        AutoBackup.getInstance().logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, path);
+                        BackupAction.DELETE_SUCCESS.logToFile(null, logEntity, path);
                     }
                 }
 
