@@ -97,6 +97,7 @@ backup-modes:
     dir: '/'
     allow-manual: true
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -104,6 +105,7 @@ backup-modes:
     dir: '/'
     allow-manual: true
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: false
 
@@ -111,6 +113,7 @@ backup-modes:
     dir: '/plugins'
     allow-manual: false
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -118,6 +121,7 @@ backup-modes:
     dir: '/plugins'
     allow-manual: false
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: false
 
@@ -125,6 +129,7 @@ backup-modes:
     dir: '/world'
     allow-manual: true
     schedule: 720
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -132,6 +137,7 @@ backup-modes:
     dir: '/world_nether'
     allow-manual: true
     schedule: 1440
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -139,6 +145,7 @@ backup-modes:
     dir: '/world_the_end'
     allow-manual: true
     schedule: 2880
+    purge-after: 0
     compression: 0
     recursive: true
 
