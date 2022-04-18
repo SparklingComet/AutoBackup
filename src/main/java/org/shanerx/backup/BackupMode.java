@@ -35,6 +35,7 @@ public class BackupMode {
         this.dir = dir;
         this.allowManual = allowManual;
         this.schedule = Math.max(schedule, 0); // if <= 0 set to 0, otherwise to predefined value
+        this.purgeAfter = Math.max(purgeAfter, 0); // if <= 0 set to 0, otherwise to predefined value
         this.recursive = recursive;
         this.purgeAfter = purgeAfter;
 

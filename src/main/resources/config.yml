@@ -87,6 +87,9 @@ allow-console-purge: true
 #   More about this on the wiki (link at the top)
 # - The recursive option determines whether to backup only the files at the given path (false) or also the files inside
 #   the subdirectories of the given path (true)
+# - The purge-after option determines after how many minutes a backup should expire. That means, on each backup performing,
+#   it will check the expiry of any living backup in the backups folder.
+#   A value of 0 or a negative value will disable automatic purging of expired backups.
 #
 # NOTE: These are just (working) examples! You should add and tweak the ones you need and get rid of those you
 # do not need. In particular, the backup 'everything' is extremely inefficient and can take very long times. It
