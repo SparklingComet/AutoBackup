@@ -49,7 +49,8 @@ public enum Message {
     PURGE_PERFORMING("&7Purging all backups"),
     PURGE_SUCCESSFUL("&7Successfully purged all backups (&c%NUMBER%&7)"),
     PURGE_LOG("&7Entity &c%NAME% &7manually started purge of all backups."),
-    PURGE_LOG_FAILED("&7Entity &c%NAME% &7manual purge failed.");
+    PURGE_LOG_FAILED("&7Entity &c%NAME% &7manual purge failed."),
+    CONFIG_WARNING_AUTOPURGE("&7Could not read config value for option `purge-after`. Defaulting to 0 (Skipping auto-purge). (&cBackup-Mode: %NAME%&7)");
 
     String msg;
     Message(String msg) {
