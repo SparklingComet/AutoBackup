@@ -27,6 +27,11 @@
 # Redundant Maven files
 dependency-reduced-pom.xml
 
+# VSCode Files
+.history
+.vscode
+
 # Temporary and log files
 **/temp.**
 *.log
+

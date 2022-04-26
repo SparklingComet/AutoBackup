@@ -28,13 +28,16 @@ public class BackupMode {
     private int schedule;
     private int compressionLevel;
     private boolean recursive;
+    private int purgeAfter;
 
-    public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel, boolean recursive) {
+    public BackupMode(String name, File dir, boolean allowManual, int schedule, int compressionLevel, boolean recursive, int purgeAfter) {
         this.name = name;
         this.dir = dir;
         this.allowManual = allowManual;
         this.schedule = Math.max(schedule, 0); // if <= 0 set to 0, otherwise to predefined value
+        this.purgeAfter = Math.max(purgeAfter, 0); // if <= 0 set to 0, otherwise to predefined value
         this.recursive = recursive;
+        this.purgeAfter = purgeAfter;
 
         switch (compressionLevel) {
             case -1:
@@ -69,6 +72,10 @@ public class BackupMode {
         return schedule;
     }
 
+    public int getPurgeAfter() {
+        return purgeAfter;
+    }
+
     public boolean isAllowedManually() {
         return allowManual;
     }
@@ -82,7 +89,8 @@ public class BackupMode {
     }
 
     public String buildZipName(LocalDateTime now) {
-        return String.format("backup__%04d-%02d-%02d_%02d-%02d-%02d__%s.zip",
+        BackupFileNameFormatter formatter = new BackupFileNameFormatter();
+        return String.format(formatter.getFileNameFormatString(),
                 now.getYear(), now.getMonthValue(), now.getDayOfMonth(), now.getHour(), now.getMinute(), now.getSecond(),
                 this.getName());
     }

@@ -87,6 +87,9 @@ allow-console-purge: true
 #   More about this on the wiki (link at the top)
 # - The recursive option determines whether to backup only the files at the given path (false) or also the files inside
 #   the subdirectories of the given path (true)
+# - The purge-after option determines after how many minutes a backup should expire. That means, on each backup performing,
+#   it will check the expiry of any living backup in the backups folder.
+#   A value of 0 or a negative value will disable automatic purging of expired backups.
 #
 # NOTE: These are just (working) examples! You should add and tweak the ones you need and get rid of those you
 # do not need. In particular, the backup 'everything' is extremely inefficient and can take very long times. It
@@ -97,6 +100,7 @@ backup-modes:
     dir: '/'
     allow-manual: true
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -104,6 +108,7 @@ backup-modes:
     dir: '/'
     allow-manual: true
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: false
 
@@ -111,6 +116,7 @@ backup-modes:
     dir: '/plugins'
     allow-manual: false
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -118,6 +124,7 @@ backup-modes:
     dir: '/plugins'
     allow-manual: false
     schedule: 0
+    purge-after: 0
     compression: 0
     recursive: false
 
@@ -125,6 +132,7 @@ backup-modes:
     dir: '/world'
     allow-manual: true
     schedule: 720
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -132,6 +140,7 @@ backup-modes:
     dir: '/world_nether'
     allow-manual: true
     schedule: 1440
+    purge-after: 0
     compression: 0
     recursive: true
 
@@ -139,6 +148,7 @@ backup-modes:
     dir: '/world_the_end'
     allow-manual: true
     schedule: 2880
+    purge-after: 0
     compression: 0
     recursive: true
 

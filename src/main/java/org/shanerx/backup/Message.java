@@ -28,6 +28,7 @@ public enum Message {
     BACKUP_FAILED("&4Could not take the following backup:  &c"),
     BACKUP_PERFORMING("&7Taking the following backups:  &c"),
     BACKUP_SUCCESSFUL("&7Successfully taken the following backups:  &c"),
+    BACKUP_DELETED("&7Successfully auto-purged the following backup:  &c"),
     INVALID_USAGE("&4Invalid usage. Try &7/autobackup help&4 for more information."),
     HELP("&7Running AutoBackup v" + AutoBackup.getInstance().getDescription().getVersion() +
             "\n&c/autobackup&7: View plugin information.\n" +
@@ -47,7 +48,9 @@ public enum Message {
     LOG_FILE_CREATION_FAIL("Failed creating log file. Logging stacktrace below:"),
     PURGE_PERFORMING("&7Purging all backups"),
     PURGE_SUCCESSFUL("&7Successfully purged all backups (&c%NUMBER%&7)"),
-    PURGE_LOG("&7Entity &c%NAME% &7manually started purge of all backups.");
+    PURGE_LOG("&7Entity &c%NAME% &7manually started purge of all backups."),
+    PURGE_LOG_FAILED("&7Entity &c%NAME% &7manual purge failed."),
+    CONFIG_WARNING_AUTOPURGE("&7Could not read config value for option `purge-after`. Defaulting to 0 (Skipping auto-purge). (&cBackup-Mode: %NAME%&7)");
 
     String msg;
     Message(String msg) {

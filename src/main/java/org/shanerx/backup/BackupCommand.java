@@ -20,7 +20,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
+import java.io.IOException;
 public class BackupCommand implements CommandExecutor {
 
     private AutoBackup plugin;
@@ -140,7 +140,11 @@ public class BackupCommand implements CommandExecutor {
                 if (plugin.getConfig().getBoolean("log-to-console")) {
                     plugin.getServer().getConsoleSender().sendMessage(Message.PURGE_LOG.toConsoleString().replace("%NAME%", sender.getName()));
                 }
-                plugin.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
+                try {
+                    plugin.purgeBackups(sender instanceof Player ? sender.getName() : "CONSOLE");
+                } catch (IOException ex) {
+                    plugin.getServer().getConsoleSender().sendMessage(Message.PURGE_LOG.toConsoleString().replace("%NAME%", sender.getName()));
+                }
                 return true;
             }
         }

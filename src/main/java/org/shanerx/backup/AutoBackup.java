@@ -24,9 +24,15 @@ import org.bukkit.scheduler.BukkitTask;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 import java.io.FileWriter;
+import java.time.ZoneOffset;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,7 +73,9 @@ public class AutoBackup extends JavaPlugin {
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
 
-        root = getConfig().getBoolean("relative-paths") ? new File(new File(getDataFolder().getAbsoluteFile().getParent()).getParent()) : null;
+        root = getConfig().getBoolean("relative-paths")
+                ? new File(new File(getDataFolder().getAbsoluteFile().getParent()).getParent())
+                : null;
         backupsDir = new File(root, getConfig().getString("backup-dir"));
         if (getConfig().getBoolean("backup-log.enable")) {
             logFile = new File(backupsDir, "backup-log.txt");
@@ -80,8 +88,7 @@ public class AutoBackup extends JavaPlugin {
     public void scheduleAll() {
         if (tasks == null) {
             tasks = new HashSet<>();
-        }
-        else {
+        } else {
             tasks.forEach(BukkitTask::cancel);
             tasks.clear();
         }
@@ -103,8 +110,10 @@ public class AutoBackup extends JavaPlugin {
                         return;
                     }
 
-                    if (log) getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
-                            .replaceAll("%NAME%", getServer().getConsoleSender().getName()).replaceAll("%MODE%", mode.getName()));
+                    if (log)
+                        getServer().getConsoleSender().sendMessage(Message.SCHEDULED_BACKUP_LOG.toConsoleString()
+                                .replaceAll("%NAME%", getServer().getConsoleSender().getName())
+                                .replaceAll("%MODE%", mode.getName()));
                     performBackup(mode, true, getConfig().getBoolean("backup-log.enable") ? "CONSOLE" : null);
                 }
             }.runTaskTimer(this, getConfig().getBoolean("immediate-backup") ? 0 : period, period);
@@ -130,7 +139,7 @@ public class AutoBackup extends JavaPlugin {
 
         String zipName = mode.buildZipName(LocalDateTime.now());
 
-        final boolean[] success = {true};
+        final boolean[] success = { true };
         boolean log = getConfig().getBoolean("log-to-console"),
                 rec = mode.isRecursive();
         final String[] failReason = new String[1];
@@ -151,9 +160,8 @@ public class AutoBackup extends JavaPlugin {
                                 return null;
                             }
                             return s;
-                            }, mode.getCompressionLevel());
-                    }
-                    else {
+                        }, mode.getCompressionLevel());
+                    } else {
                         ZipUtil.pack(mode.getDir(), zipFile, s -> {
 
                             if (!rec && s.split("/").length > 1) {
@@ -161,31 +169,68 @@ public class AutoBackup extends JavaPlugin {
                             }
                             return s;
 
-                            },  mode.getCompressionLevel());
+                        }, mode.getCompressionLevel());
                     }
 
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
-                            + mode.getName());
-                } catch(Exception e){
+                    if (log) {
+                        getServer().getConsoleSender().sendMessage(Message.BACKUP_SUCCESSFUL.toConsoleString()
+                                + mode.getName());
+                    }
+
+                    autoPurgeBackups(mode);
+
+                } catch (Exception e) {
                     e.printStackTrace();
-                    if (log) getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
-                            + mode.getName());
+                    if (log)
+                        getServer().getConsoleSender().sendMessage(Message.BACKUP_FAILED.toConsoleString()
+                                + mode.getName());
                     success[0] = false;
                     failReason[0] = e.getMessage();
                 }
             }
         };
 
-        if (async) runnable.runTaskAsynchronously(this);
-        else runnable.runTask(this);
+        if (async)
+            runnable.runTaskAsynchronously(this);
+        else
+            runnable.runTask(this);
 
         logToFile(success[0] ? BackupAction.SUCCESS : BackupAction.FAIL, failReason[0], logEntity, zipName);
         return success[0];
     }
 
-    public boolean purgeBackups(String logEntity) {
+    private void autoPurgeBackups(BackupMode mode) throws IOException {
+        if (mode.getPurgeAfter() <= 0) {
+            return;
+        }
+
+        Set<BackupFile> backups = getPastBackups(backupsDir.getAbsolutePath());
+        Set<BackupFile> backupsForThisMode = backups.stream()
+                .filter(currentBackup -> currentBackup.getMode().equals(mode.getName()))
+                .collect(Collectors.toSet());
+
+        for (BackupFile backup : backupsForThisMode) {
+            LocalDateTime backupDate = backup.getBackupDate();
+
+            long backupTimeMilliSeconds = backupDate.toInstant(ZoneOffset.ofTotalSeconds(0)).toEpochMilli();
+            long millisecondsNow = LocalDateTime.now().toInstant(ZoneOffset.ofTotalSeconds(0)).toEpochMilli();
+            long purgeTime = backupTimeMilliSeconds + mode.getPurgeAfter() * 1000 * 60;
+            if (millisecondsNow < purgeTime) {
+                continue;
+            }
+
+            File backupFile = new File(backupsDir, backup.getFileName());
+            if (backupFile.exists()) {
+                backupFile.delete();
+                getServer().getConsoleSender()
+                    .sendMessage(Message.BACKUP_DELETED.toConsoleString() + backup.getMode() + " from " + backupDate);
+            }
+        }
+    }
+
+    public boolean purgeBackups(String logEntity) throws IOException {
         final boolean[] success = new boolean[1];
-        final int[] counter = {0};
+        final int[] counter = { 0 };
         boolean log = getConfig().getBoolean("log-to-console");
 
         new BukkitRunnable() {
@@ -207,11 +252,10 @@ public class AutoBackup extends JavaPlugin {
                         continue;
                     }
 
-                    if(!f.delete()) {
+                    if (!f.delete()) {
                         success[0] = false;
                         logToFile(BackupAction.DELETE_FAIL, "unknown", logEntity, path);
-                    }
-                    else {
+                    } else {
                         ++counter;
                         logToFile(BackupAction.DELETE_SUCCESS, null, logEntity, path);
                     }
@@ -246,18 +290,15 @@ public class AutoBackup extends JavaPlugin {
                 else
                     writer.append(zipName + "\n");
 
-            }
-            else if (action == BackupAction.FAIL && getConfig().getBoolean("backup-log.log-failure")) {
+            } else if (action == BackupAction.FAIL && getConfig().getBoolean("backup-log.log-failure")) {
                 if (logEntity != null)
                     writer.append(String.format("%s    (by %s)    FAIL: %s\n", zipName, logEntity, failReason));
                 else
                     writer.append(zipName + "    FAIL\n");
 
-            }
-            else if (action == BackupAction.DELETE_SUCCESS) {
+            } else if (action == BackupAction.DELETE_SUCCESS) {
                 writer.append(String.format("%s    (by %s)    DELETED\n", zipName, logEntity));
-            }
-            else if (action == BackupAction.DELETE_FAIL) {
+            } else if (action == BackupAction.DELETE_FAIL) {
                 writer.append(String.format("%s    (by %s)    DELETION FAILED: %s\n", zipName, logEntity, failReason));
             }
 
@@ -274,17 +315,26 @@ public class AutoBackup extends JavaPlugin {
         backupModes.clear();
         defaultModes.clear();
 
-        Map<?,?> map;
+        Map<?, ?> map;
         for (Object obj : getConfig().getList("backup-modes")) {
-            map = (LinkedHashMap<?,?>) obj;
+            map = (LinkedHashMap<?, ?>) obj;
+            String name = (String) map.get("name");
+
+            Integer purgeAfter = (Integer) map.get("purge-after");
+            if (purgeAfter == null) {
+                getServer().getConsoleSender().sendMessage(Message.CONFIG_WARNING_AUTOPURGE.toConsoleString()
+                        .replace("%NAME%", name));
+                purgeAfter = 0;
+            }
+
             backupModes.add(new BackupMode(
-                    (String) map.get("name"),
+                    name,
                     new File(root, (String) map.get("dir")),
                     (Boolean) map.get("allow-manual"),
                     (Integer) map.get("schedule"),
                     (Integer) map.get("compression"),
-                    (Boolean) map.get("recursive")
-            ));
+                    (Boolean) map.get("recursive"),
+                    purgeAfter));
         }
 
         for (BackupMode mode : backupModes) {
@@ -294,32 +344,19 @@ public class AutoBackup extends JavaPlugin {
         }
     }
 
-    public Set<Backup> getPastBackups() {
-        Set<Backup> backups = new HashSet<>();
+    public Set<BackupFile> getPastBackups(String dir) throws IOException {
 
-        for (File f : backupsDir.listFiles()) {
-            String path = backupsDir.toPath().relativize(f.toPath()).toString();
-
-            // assumption: #listFiles() never null since backupsDir is a valid dir
-            if (f.isDirectory() || path.equals(backupsDir.toPath().relativize(logFile.toPath()))) {
-                // not a backup zip
-                continue;
-            }
-
-            if (!path.endsWith(".zip") || !path.startsWith("backup__")) {
-                continue;
-            }
-
-            String modeName = path.split("__")[2].split("\\.")[0];
-            for (BackupMode mode : getBackupModes()) {
-                if (mode.getName().equalsIgnoreCase(modeName)) {
-                    backups.add(new Backup(mode, null)); // TODO FIX
-                    break;
-                }
-            }
+        try (Stream<Path> stream = Files.list(Paths.get(dir))) {
+            return stream
+                    .filter(file -> !Files.isDirectory(file))
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(file -> file.endsWith(".zip"))
+                    .map(file -> new BackupFile(file))
+                    .map(backup -> backup.initialize())
+                    .filter(backup -> backup.getIsValid())
+                    .collect(Collectors.toSet());
         }
-
-        return backups;
     }
 
     public void registerMetrics() {
