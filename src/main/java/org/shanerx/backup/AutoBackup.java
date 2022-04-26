@@ -318,14 +318,13 @@ public class AutoBackup extends JavaPlugin {
         Map<?, ?> map;
         for (Object obj : getConfig().getList("backup-modes")) {
             map = (LinkedHashMap<?, ?>) obj;
-
             String name = (String) map.get("name");
-            Integer purgeAfter = 0;
-            try {
-                purgeAfter = (Integer) map.get("purge-after");
-            } catch (Exception ex) {
+
+            Integer purgeAfter = (Integer) map.get("purge-after");
+            if (purgeAfter == null) {
                 getServer().getConsoleSender().sendMessage(Message.CONFIG_WARNING_AUTOPURGE.toConsoleString()
-                            .replace("%NAME%", name));
+                        .replace("%NAME%", name));
+                purgeAfter = 0;
             }
 
             backupModes.add(new BackupMode(
